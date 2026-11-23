@@ -1,0 +1,680 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReviewFlow — Gérez votre réputation</title>
+<style>
+:root {
+  --bg:#0b1120;
+  --panel:#111c2e;
+  --panel2:#16243a;
+  --blue:#2878f0;
+  --blue2:#4694ff;
+  --text:#f1f5f9;
+  --muted:#91a3bb;
+  --border:#26364d;
+  --green:#22c58b;
+  --red:#ef6464;
+  --yellow:#f5b942;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.primary{background:var(--blue);color:white;border:0}
+.primary:hover{background:var(--blue2)}
+.btn{padding:11px 16px;border-radius:9px;border:1px solid var(--border);background:var(--panel2);color:white;font-weight:600}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-danger{color:#ff8585;border-color:#713b48;background:#291923}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:white}
+input,select,textarea{width:100%;background:#0d1728;color:white;border:1px solid var(--border);padding:12px;border-radius:9px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:100px}
+label{display:block;font-size:13px;color:#c5d2e3;margin-bottom:7px}
+.field{margin-bottom:16px}
+h1,h2,h3,p{margin-top:0}
+a{color:inherit;text-decoration:none}
+#toast{position:fixed;bottom:24px;right:24px;background:#183a30;border:1px solid #286b55;color:#c9ffe9;padding:14px 20px;border-radius:12px;z-index:1000;display:none;box-shadow:0 10px 35px #0008}
+#toast.error{background:#3a2025;border-color:#753c46;color:#ffd9de}
+
+/* LANDING */
+#landing{min-height:100vh}
+.public-nav{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 7%;border-bottom:1px solid var(--border)}
+.logo{font-size:24px;font-weight:900;letter-spacing:-1px}
+.logo span{color:var(--blue2)}
+.public-links{display:flex;gap:25px;align-items:center;color:var(--muted);font-size:14px}
+.public-links a:hover{color:white}
+.hero{text-align:center;padding:105px 20px 75px;max-width:1000px;margin:auto}
+.pill{display:inline-block;padding:8px 14px;border-radius:30px;background:#142c4b;border:1px solid #254c7b;color:#83baff;font-size:13px;margin-bottom:24px}
+.hero h1{font-size:clamp(42px,7vw,76px);line-height:1.06;letter-spacing:-3px;margin-bottom:22px}
+.gradient{background:linear-gradient(90deg,#4d9cff,#8a7cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:18px;line-height:1.7;color:var(--muted);max-width:680px;margin:0 auto 30px}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-actions button{padding:15px 23px;border-radius:10px;font-weight:700}
+.preview{max-width:1000px;margin:15px auto 80px;padding:12px;background:#101d30;border:1px solid var(--border);border-radius:18px;box-shadow:0 30px 90px #0008}
+.preview-inner{padding:25px;background:#0c1626;border-radius:12px}
+.preview-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.preview-stat{background:var(--panel);padding:20px;border:1px solid var(--border);border-radius:12px}
+.preview-stat strong{display:block;font-size:27px;margin-top:8px}
+.section{padding:75px 7%;max-width:1200px;margin:auto}
+.section-heading{text-align:center;max-width:650px;margin:0 auto 40px}
+.section-heading h2{font-size:36px;letter-spacing:-1px}
+.section-heading p{color:var(--muted);line-height:1.7}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.feature,.price-card,.faq-card{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:25px}
+.feature-icon{font-size:27px;margin-bottom:18px}
+.feature h3{margin-bottom:10px}
+.feature p,.price-card p,.faq-card p{color:var(--muted);line-height:1.65;font-size:14px}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.price{font-size:35px;font-weight:800;margin:18px 0}
+.price-card ul{padding-left:20px;color:#c5d2e3;line-height:2;font-size:14px}
+.price-card .btn{width:100%;margin-top:15px}
+.price-card.popular{border-color:var(--blue);box-shadow:0 0 30px #2878f022}
+.faq{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.public-footer{border-top:1px solid var(--border);padding:30px 7%;display:flex;justify-content:space-between;color:var(--muted);font-size:13px}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}
+.auth-card{width:min(440px,100%);background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:32px}
+.auth-card .logo{margin-bottom:25px}
+.auth-card h2{margin-bottom:8px}
+.auth-card .muted{font-size:14px;line-height:1.5;margin-bottom:25px}
+.auth-card button{width:100%;padding:13px;border-radius:9px;font-weight:700}
+.auth-bottom{text-align:center;font-size:13px;color:var(--muted);margin-top:20px}
+.text-btn{border:0;background:none;color:#73adff;font-weight:700}
+
+/* APP */
+#app{display:none;min-height:100vh}
+.sidebar{width:245px;background:#0d1728;border-right:1px solid var(--border);position:fixed;inset:0 auto 0 0;padding:25px 16px;display:flex;flex-direction:column;z-index:10}
+.sidebar .logo{padding:0 12px 30px}
+.nav-label{font-size:10px;letter-spacing:1.5px;color:#61758f;padding:15px 12px 9px}
+.nav-item{width:100%;text-align:left;padding:12px;border:0;background:transparent;color:#9eafc4;border-radius:9px;margin:2px 0;font-size:14px}
+.nav-item:hover,.nav-item.active{background:#182b45;color:white}
+.nav-item.active{box-shadow:inset 3px 0 var(--blue)}
+.sidebar-bottom{margin-top:auto}
+.profile-mini{display:flex;gap:10px;align-items:center;padding:15px 10px;border-top:1px solid var(--border);margin-top:15px}
+.avatar{width:35px;height:35px;background:#254e83;border-radius:50%;display:grid;place-items:center;font-weight:800}
+.main{margin-left:245px;min-height:100vh}
+.topbar{height:75px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 35px;background:#0b1120}
+.topbar-right{display:flex;gap:12px;align-items:center}
+.content{padding:32px 35px;max-width:1450px;margin:auto}
+.page-title{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:28px}
+.page-title h1{font-size:27px;margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:21px}
+.stat-top{display:flex;justify-content:space-between;color:var(--muted);font-size:13px}
+.stat-number{font-size:29px;font-weight:800;margin:15px 0 6px}
+.stat-note{font-size:12px;color:var(--green)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:22px;margin-bottom:20px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:20px}
+.panel-head h3{margin:0;font-size:16px}
+.dashboard-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+.chart{height:220px;display:flex;align-items:end;gap:12px;padding-top:15px}
+.chart-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:8px}
+.chart-bar{width:65%;min-width:12px;max-width:45px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#4b9cff,#2362c3);min-height:3px}
+.chart-col span{font-size:11px;color:var(--muted)}
+.review-row{padding:16px 0;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:12px}
+.review-row:first-child{border-top:0}
+.review-person{font-weight:700;font-size:14px}
+.review-comment{font-size:13px;color:#a6b6cb;margin-top:6px;line-height:1.5}
+.stars{color:#ffc45d;letter-spacing:2px}
+.tag{font-size:11px;border-radius:20px;padding:5px 9px;background:#183c32;color:#79e3b7}
+.tag.pending{background:#45391d;color:#ffd17a}
+.toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:180px}
+.toolbar select{width:auto;min-width:140px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th,td{text-align:left;padding:14px 12px;border-bottom:1px solid var(--border);font-size:13px}
+th{color:var(--muted);font-weight:600}
+td{color:#d5dfec}
+.actions{display:flex;gap:7px}
+.actions button{padding:7px 9px;font-size:12px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.form-grid .full{grid-column:1/-1}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.generator-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.generated{min-height:220px;background:#0c1728;border:1px solid var(--border);border-radius:10px;padding:18px;line-height:1.7;white-space:pre-wrap;color:#dce8f7}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid var(--border);gap:20px}
+.setting-row:last-child{border:0}
+.setting-row p{font-size:13px;color:var(--muted);margin:5px 0 0}
+.modal-bg{position:fixed;inset:0;background:#000a;z-index:100;display:grid;place-items:center;padding:15px}
+.modal{width:min(520px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:25px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.modal-head h3{margin:0}
+.close{border:0;background:transparent;color:white;font-size:23px}
+.mobile-menu{display:none}
+@media(max-width:1000px){
+ .stats{grid-template-columns:repeat(2,1fr)}
+ .features,.pricing{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+ .sidebar{transform:translateX(-100%);transition:.25s}
+ .sidebar.open{transform:translateX(0)}
+ .main{margin-left:0}
+ .mobile-menu{display:block}
+ .topbar{padding:0 16px}
+ .content{padding:22px 16px}
+ .dashboard-grid,.generator-layout{grid-template-columns:1fr}
+ .public-links a:not(.public-cta){display:none}
+ .public-nav{padding:0 5%}
+ .hero{padding-top:75px}
+ .features,.pricing,.faq{grid-template-columns:1fr}
+ .preview-stats{grid-template-columns:1fr}
+ .public-footer{gap:15px;flex-direction:column}
+ .form-grid{grid-template-columns:1fr}
+ .form-grid .full{grid-column:auto}
+ .page-title{align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- SITE PUBLIC -->
+<section id="landing">
+  <nav class="public-nav">
+    <div class="logo">Review<span>Flow</span></div>
+    <div class="public-links">
+      <a href="#features">Fonctionnalités</a>
+      <a href="#pricing">Tarifs</a>
+      <a href="#faq">FAQ</a>
+      <button class="btn btn-ghost" onclick="showAuth('login')">Connexion</button>
+      <button class="btn primary" onclick="showAuth('register')">Créer un compte</button>
+    </div>
+  </nav>
+  <div class="hero">
+    <div class="pill">✦ La gestion des avis, simplifiée</div>
+    <h1>Votre réputation mérite<br><span class="gradient">mieux qu'un simple avis.</span></h1>
+    <p>Centralisez vos avis clients, suivez votre réputation et créez des réponses professionnelles depuis un seul espace.</p>
+    <div class="hero-actions">
+      <button class="btn primary" onclick="showAuth('register')">Découvrir ReviewFlow →</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Découvrir les fonctionnalités</button>
+    </div>
+  </div>
+  <div class="preview">
+    <div class="preview-inner">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">
+        <strong>Vue d'ensemble</strong><span class="tag">● Démonstration</span>
+      </div>
+      <div class="preview-stats">
+        <div class="preview-stat"><span class="muted small">Avis clients</span><strong>248</strong><span class="stat-note">↗ Activité récente</span></div>
+        <div class="preview-stat"><span class="muted small">Note moyenne</span><strong>4,8 ★</strong><span class="stat-note">Excellente réputation</span></div>
+        <div class="preview-stat"><span class="muted small">Réponses préparées</span><strong>192</strong><span class="stat-note">Organisation simplifiée</span></div>
+      </div>
+    </div>
+  </div>
+  <section class="section" id="features">
+    <div class="section-heading"><div class="pill">LES FONCTIONNALITÉS</div><h2>Tout ce qu'il faut, au même endroit.</h2><p>Des outils simples pour mieux comprendre et gérer les retours de vos clients.</p></div>
+    <div class="features">
+      <div class="feature"><div class="feature-icon">📊</div><h3>Tableau de bord</h3><p>Retrouvez vos indicateurs importants et visualisez l'évolution de vos avis.</p></div>
+      <div class="feature"><div class="feature-icon">⭐</div><h3>Gestion des avis</h3><p>Classez, recherchez et gérez vos retours clients depuis un seul espace.</p></div>
+      <div class="feature"><div class="feature-icon">✍️</div><h3>Réponses simplifiées</h3><p>Préparez rapidement des réponses adaptées au ton de votre établissement.</p></div>
+      <div class="feature"><div class="feature-icon">🏢</div><h3>Établissements</h3><p>Organisez les avis de plusieurs établissements dans votre espace de démonstration.</p></div>
+      <div class="feature"><div class="feature-icon">📥</div><h3>Export des données</h3><p>Exportez les avis enregistrés pour les consulter dans un tableur.</p></div>
+      <div class="feature"><div class="feature-icon">🔔</div><h3>Suivi de l'activité</h3><p>Gardez une vue claire sur les nouveautés et les actions effectuées.</p></div>
+    </div>
+  </section>
+  <section class="section" id="pricing">
+    <div class="section-heading"><div class="pill">OFFRES</div><h2>Des offres simples et transparentes.</h2><p>Tarifs de présentation fictifs pour ce prototype. Aucun paiement n'est activé.</p></div>
+    <div class="pricing">
+      <div class="price-card"><h3>Découverte</h3><p>Pour découvrir les outils.</p><div class="price">0€ <span class="muted small">/ mois</span></div><ul><li>Tableau de bord</li><li>Gestion des avis de démonstration</li><li>Générateur de réponses</li></ul><button class="btn" onclick="showAuth('register')">Commencer</button></div>
+      <div class="price-card popular"><div class="pill">OFFRE POPULAIRE</div><h3>Professionnel</h3><p>Pour une activité en croissance.</p><div class="price">19€ <span class="muted small">/ mois</span></div><ul><li>Toutes les fonctions Découverte</li><li>Plusieurs établissements</li><li>Exports avancés</li></ul><button class="btn primary" onclick="showAuth('register')">Découvrir</button></div>
+      <div class="price-card"><h3>Entreprise</h3><p>Pour les équipes.</p><div class="price">49€ <span class="muted small">/ mois</span></div><ul><li>Toutes les fonctions Pro</li><li>Organisation d'équipe</li><li>Suivi centralisé</li></ul><button class="btn" onclick="showAuth('register')">Découvrir</button></div>
+    </div>
+  </section>
+  <section class="section" id="faq">
+    <div class="section-heading"><div class="pill">QUESTIONS FRÉQUENTES</div><h2>Vous avez des questions ?</h2></div>
+    <div class="faq">
+      <div class="faq-card"><h3>ReviewFlow, c'est quoi ?</h3><p>Un outil de démonstration pour organiser des avis clients et préparer des réponses.</p></div>
+      <div class="faq-card"><h3>Est-ce vraiment connecté à Google ?</h3><p>Non. Cette version ne récupère pas automatiquement les avis Google ou d'autres plateformes.</p></div>
+      <div class="faq-card"><h3>Les réponses sont-elles générées par une IA ?</h3><p>Non. Le générateur actuel utilise des modèles de texte prédéfinis.</p></div>
+      <div class="faq-card"><h3>Mes données sont-elles en ligne ?</h3><p>Non. Elles sont conservées localement dans le navigateur utilisé pour cette démonstration.</p></div>
+    </div>
+  </section>
+  <footer class="public-footer"><div class="logo">Review<span>Flow</span></div><div>© 2026 ReviewFlow — Prototype de démonstration</div><div>Simple. Clair. Efficace.</div></footer>
+</section>
+
+<!-- AUTHENTIFICATION DEMO -->
+<section id="auth" class="auth-wrap hidden">
+  <div class="auth-card">
+    <div class="logo">Review<span>Flow</span></div>
+    <div id="loginForm">
+      <h2>Bon retour !</h2>
+      <p class="muted">Connectez-vous à votre espace de démonstration.</p>
+      <div class="field"><label>Adresse e-mail</label><input id="loginEmail" type="email" placeholder="vous@exemple.fr"></div>
+      <div class="field"><label>Mot de passe</label><input id="loginPassword" type="password" placeholder="Votre mot de passe"></div>
+      <button class="btn primary" onclick="login()">Se connecter</button>
+      <div class="auth-bottom">Pas encore de compte ? <button class="text-btn" onclick="showAuth('register')">Créer un compte</button></div>
+    </div>
+    <div id="registerForm" class="hidden">
+      <h2>Créer un compte</h2>
+      <p class="muted">Créez votre espace de démonstration ReviewFlow.</p>
+      <div class="field"><label>Nom</label><input id="registerName" placeholder="Votre nom"></div>
+      <div class="field"><label>Adresse e-mail</label><input id="registerEmail" type="email" placeholder="vous@exemple.fr"></div>
+      <div class="field"><label>Mot de passe</label><input id="registerPassword" type="password" placeholder="Au moins 6 caractères"></div>
+      <button class="btn primary" onclick="register()">Créer mon compte</button>
+      <div class="auth-bottom">Déjà inscrit ? <button class="text-btn" onclick="showAuth('login')">Se connecter</button></div>
+    </div>
+    <div class="auth-bottom"><button class="text-btn" onclick="goLanding()">← Retour au site</button></div>
+    <p class="small muted" style="margin-top:18px">Prototype local : ne saisissez pas de vrai mot de passe.</p>
+  </div>
+</section>
+
+<!-- APPLICATION -->
+<section id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">Review<span>Flow</span></div>
+    <div class="nav-label">ESPACE DE TRAVAIL</div>
+    <button class="nav-item active" data-page="dashboard" onclick="openPage('dashboard')">▦ &nbsp; Tableau de bord</button>
+    <button class="nav-item" data-page="reviews" onclick="openPage('reviews')">☆ &nbsp; Mes avis</button>
+    <button class="nav-item" data-page="generator" onclick="openPage('generator')">✎ &nbsp; Générateur</button>
+    <button class="nav-item" data-page="establishments" onclick="openPage('establishments')">⌂ &nbsp; Établissements</button>
+    <div class="nav-label">PRÉFÉRENCES</div>
+    <button class="nav-item" data-page="settings" onclick="openPage('settings')">⚙ &nbsp; Paramètres</button>
+    <button class="nav-item" data-page="help" onclick="openPage('help')">? &nbsp; Centre d'aide</button>
+    <div class="sidebar-bottom">
+      <button class="nav-item" onclick="exportCSV()">⇩ &nbsp; Exporter les avis</button>
+      <button class="nav-item" onclick="logout()">↪ &nbsp; Déconnexion</button>
+      <div class="profile-mini"><div class="avatar" id="avatar">R</div><div><strong id="sideName" style="font-size:13px">Utilisateur</strong><div class="small muted" id="sideEmail">Démo</div></div></div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <button class="btn mobile-menu" onclick="toggleMenu()">☰</button>
+      <div class="muted small" id="breadcrumb">Espace de travail / Tableau de bord</div>
+      <div class="topbar-right"><span class="tag">● Mode démo</span><button class="btn" onclick="notify('Aucune nouvelle notification.')">♧</button></div>
+    </header>
+    <div class="content">
+
+      <div id="page-dashboard" class="page">
+        <div class="page-title"><div><h1>Bonjour <span id="helloName">!</span> 👋</h1><p class="muted">Voici le résumé de votre activité.</p></div><button class="btn primary" onclick="openPage('reviews');openAddReview()">+ Ajouter un avis</button></div>
+        <div class="stats">
+          <div class="stat-card"><div class="stat-top"><span>Total des avis</span><span>☆</span></div><div class="stat-number" id="statTotal">0</div><div class="stat-note">Avis enregistrés</div></div>
+          <div class="stat-card"><div class="stat-top"><span>Note moyenne</span><span>★</span></div><div class="stat-number" id="statAverage">—</div><div class="stat-note">Sur 5 étoiles</div></div>
+          <div class="stat-card"><div class="stat-top"><span>Réponses préparées</span><span>✎</span></div><div class="stat-number" id="statPrepared">0</div><div class="stat-note">Dans cet espace</div></div>
+          <div class="stat-card"><div class="stat-top"><span>Avis positifs</span><span>↗</span></div><div class="stat-number" id="statPositive">0%</div><div class="stat-note">Notes de 4 et 5 étoiles</div></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="panel"><div class="panel-head"><h3>Activité des 7 derniers jours</h3><span class="muted small">Avis ajoutés</span></div><div class="chart" id="weeklyChart"></div></div>
+          <div class="panel"><div class="panel-head"><h3>Répartition des notes</h3></div><div id="ratingBreakdown"></div></div>
+        </div>
+        <div class="panel"><div class="panel-head"><h3>Derniers avis</h3><button class="btn" onclick="openPage('reviews')">Voir tout →</button></div><div id="recentReviews"></div></div>
+      </div>
+
+      <div id="page-reviews" class="page hidden">
+        <div class="page-title"><div><h1>Mes avis</h1><p class="muted">Consultez et organisez les retours de vos clients.</p></div><button class="btn primary" onclick="openAddReview()">+ Nouvel avis</button></div>
+        <div class="panel">
+          <div class="toolbar"><input id="searchReviews" placeholder="Rechercher un client ou un commentaire..." oninput="renderReviews()"><select id="filterReviews" onchange="renderReviews()"><option value="all">Toutes les notes</option><option value="5">5 étoiles</option><option value="4">4 étoiles</option><option value="3">3 étoiles</option><option value="2">2 étoiles</option><option value="1">1 étoile</option></select><select id="sortReviews" onchange="renderReviews()"><option value="new">Plus récents</option><option value="old">Plus anciens</option><option value="high">Meilleures notes</option><option value="low">Notes les plus basses</option></select></div>
+          <div class="table-wrap"><table><thead><tr><th>CLIENT</th><th>NOTE</th><th>COMMENTAIRE</th><th>DATE</th><th>ACTIONS</th></tr></thead><tbody id="reviewList"></tbody></table></div>
+          <div id="reviewEmpty" class="empty hidden">Aucun avis trouvé.</div>
+        </div>
+      </div>
+
+      <div id="page-generator" class="page hidden">
+        <div class="page-title"><div><h1>Générateur de réponses</h1><p class="muted">Préparez une réponse adaptée à chaque avis.</p></div></div>
+        <div class="generator-layout">
+          <div class="panel">
+            <h3>Personnaliser la réponse</h3><br>
+            <div class="field"><label>Note du client</label><select id="responseRating"><option value="5">★★★★★ — 5 étoiles</option><option value="4">★★★★ — 4 étoiles</option><option value="3">★★★ — 3 étoiles</option><option value="2">★★ — 2 étoiles</option><option value="1">★ — 1 étoile</option></select></div>
+            <div class="field"><label>Nom du client</label><input id="responseClient" placeholder="Ex : Thomas"></div>
+            <div class="field"><label>Nom de l'établissement</label><input id="responseBusiness" placeholder="Ex : Mon entreprise"></div>
+            <div class="field"><label>Ton de la réponse</label><select id="responseTone"><option value="professional">Professionnel</option><option value="friendly">Chaleureux</option><option value="short">Court et direct</option></select></div>
+            <div class="field"><label>Commentaire du client (facultatif)</label><textarea id="responseComment" placeholder="Copiez ici le commentaire du client..."></textarea></div>
+            <button class="btn primary" style="width:100%" onclick="generateResponse()">✦ Générer une réponse</button>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Votre réponse</h3><span class="tag">Modèle automatique</span></div>
+            <div class="generated" id="generatedResponse">Votre réponse apparaîtra ici après génération.</div>
+            <div style="display:flex;gap:10px;margin-top:15px;flex-wrap:wrap"><button class="btn primary" onclick="copyResponse()">Copier le texte</button><button class="btn" onclick="clearResponse()">Effacer</button></div>
+            <p class="small muted" style="margin-top:18px">Ce générateur utilise des modèles prédéfinis. Relisez et personnalisez toujours la réponse avant de l'envoyer.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-establishments" class="page hidden">
+        <div class="page-title"><div><h1>Établissements</h1><p class="muted">Organisez vos espaces de démonstration.</p></div><button class="btn primary" onclick="addEstablishment()">+ Ajouter</button></div>
+        <div class="panel"><div id="establishmentList"></div></div>
+      </div>
+
+      <div id="page-settings" class="page hidden">
+        <div class="page-title"><div><h1>Paramètres</h1><p class="muted">Gérez les préférences de votre espace.</p></div></div>
+        <div class="panel">
+          <h3>Profil</h3><br>
+          <div class="form-grid">
+            <div class="field"><label>Nom</label><input id="settingsName"></div>
+            <div class="field"><label>E-mail</label><input id="settingsEmail" disabled></div>
+          </div>
+          <button class="btn primary" onclick="saveSettings()">Enregistrer le profil</button>
+        </div>
+        <div class="panel">
+          <h3>Données</h3><br>
+          <div class="setting-row"><div><strong>Exporter les avis</strong><p>Télécharger vos avis au format CSV.</p></div><button class="btn" onclick="exportCSV()">Exporter</button></div>
+          <div class="setting-row"><div><strong>Réinitialiser les avis</strong><p>Supprimer les avis de démonstration enregistrés.</p></div><button class="btn btn-danger" onclick="resetReviews()">Réinitialiser</button></div>
+          <div class="setting-row"><div><strong>Déconnexion</strong><p>Revenir à la page publique.</p></div><button class="btn" onclick="logout()">Déconnexion</button></div>
+        </div>
+      </div>
+
+      <div id="page-help" class="page hidden">
+        <div class="page-title"><div><h1>Centre d'aide</h1><p class="muted">Quelques informations pour utiliser ReviewFlow.</p></div></div>
+        <div class="panel"><h3>Comment ajouter un avis ?</h3><p class="muted">Ouvrez « Mes avis », puis cliquez sur « Nouvel avis ». Remplissez les champs et enregistrez.</p><hr style="border-color:var(--border)"><h3>Comment préparer une réponse ?</h3><p class="muted">Ouvrez le générateur, choisissez une note et un ton, puis cliquez sur « Générer une réponse ».</p><hr style="border-color:var(--border)"><h3>Comment sauvegarder mes données ?</h3><p class="muted">Les données de cette démonstration sont enregistrées dans le stockage local de votre navigateur. Pensez à exporter régulièrement vos avis.</p><hr style="border-color:var(--border)"><h3>Besoin d'aide supplémentaire ?</h3><p class="muted">Cette version est un prototype local sans service d'assistance connecté.</p></div>
+      </div>
+
+    </div>
+  </main>
+</section>
+
+<!-- MODALE AVIS -->
+<div id="reviewModal" class="modal-bg hidden">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modalTitle">Ajouter un avis</h3><button class="close" onclick="closeModal()">×</button></div>
+    <div class="field"><label>Nom du client</label><input id="reviewClient" placeholder="Ex : Thomas"></div>
+    <div class="field"><label>Note</label><select id="reviewRating"><option value="5">★★★★★ — 5 étoiles</option><option value="4">★★★★ — 4 étoiles</option><option value="3">★★★ — 3 étoiles</option><option value="2">★★ — 2 étoiles</option><option value="1">★ — 1 étoile</option></select></div>
+    <div class="field"><label>Commentaire</label><textarea id="reviewComment" placeholder="Commentaire du client..."></textarea></div>
+    <div class="field"><label>Date</label><input id="reviewDate" type="date"></div>
+    <div style="display:flex;gap:10px"><button class="btn primary" style="flex:1" onclick="saveReview()">Enregistrer</button><button class="btn" onclick="closeModal()">Annuler</button></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const read = (key, fallback) => {
+  try { const value = JSON.parse(localStorage.getItem(key)); return value ?? fallback; }
+  catch { return fallback; }
+};
+const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+let account = read("rf_demo_account", null);
+let reviews = read("rf_reviews", null);
+let prepared = read("rf_prepared", 0);
+let establishments = read("rf_establishments", ["Mon établissement"]);
+let editingId = null;
+let currentPage = "dashboard";
+
+if (!Array.isArray(reviews)) {
+  const today = new Date();
+  const ago = days => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - days);
+    return d.toISOString().slice(0,10);
+  };
+  reviews = [
+    {id:1,client:"Thomas",rating:5,comment:"Service excellent, équipe très accueillante. Je recommande !",date:ago(0)},
+    {id:2,client:"Sophie",rating:4,comment:"Très bonne expérience, je reviendrai avec plaisir.",date:ago(1)},
+    {id:3,client:"Lucas",rating:5,comment:"Une prestation de qualité et un accueil parfait.",date:ago(2)},
+    {id:4,client:"Emma",rating:3,comment:"Bonne expérience dans l'ensemble, quelques améliorations possibles.",date:ago(3)},
+    {id:5,client:"Nathan",rating:5,comment:"Tout était parfait, merci pour votre professionnalisme.",date:ago(5)},
+    {id:6,client:"Camille",rating:2,comment:"Un peu déçu par le délai d'attente.",date:ago(6)}
+  ];
+  write("rf_reviews", reviews);
+}
+if (!Array.isArray(establishments)) establishments = ["Mon établissement"];
+
+function notify(message, error=false) {
+  const t=$("toast");
+  t.textContent=message;
+  t.className=error?"error":"";
+  t.style.display="block";
+  clearTimeout(window.toastTimer);
+  window.toastTimer=setTimeout(()=>t.style.display="none",2800);
+}
+function goLanding(){
+  $("landing").style.display="block";
+  $("auth").classList.add("hidden");
+  $("app").style.display="none";
+  window.scrollTo(0,0);
+}
+function showAuth(mode){
+  $("landing").style.display="none";
+  $("app").style.display="none";
+  $("auth").classList.remove("hidden");
+  $("loginForm").classList.toggle("hidden",mode!=="login");
+  $("registerForm").classList.toggle("hidden",mode!=="register");
+}
+function register(){
+  const name=$("registerName").value.trim();
+  const email=$("registerEmail").value.trim().toLowerCase();
+  const password=$("registerPassword").value;
+  if(!name||!email||password.length<6){notify("Remplissez tous les champs et utilisez au moins 6 caractères.",true);return;}
+  if(!email.includes("@")||!email.includes(".")){notify("Adresse e-mail invalide.",true);return;}
+  account={name,email,password};
+  write("rf_demo_account",account);
+  enterApp();
+  notify("Compte de démonstration créé !");
+}
+function login(){
+  const email=$("loginEmail").value.trim().toLowerCase();
+  const password=$("loginPassword").value;
+  if(!account){notify("Créez d'abord un compte de démonstration.",true);showAuth("register");return;}
+  if(email!==account.email||password!==account.password){notify("Identifiants incorrects.",true);return;}
+  enterApp();
+  notify("Connexion réussie !");
+}
+function enterApp(){
+  $("landing").style.display="none";
+  $("auth").classList.add("hidden");
+  $("app").style.display="block";
+  updateProfile();
+  renderAll();
+  openPage("dashboard");
+}
+function logout(){
+  $("app").style.display="none";
+  goLanding();
+  notify("Déconnexion effectuée.");
+}
+function updateProfile(){
+  if(!account)return;
+  $("sideName").textContent=account.name;
+  $("sideEmail").textContent=account.email;
+  $("avatar").textContent=(account.name[0]||"R").toUpperCase();
+  $("helloName").textContent=account.name.split(" ")[0];
+  $("settingsName").value=account.name;
+  $("settingsEmail").value=account.email;
+}
+function saveSettings(){
+  const name=$("settingsName").value.trim();
+  if(!name){notify("Le nom ne peut pas être vide.",true);return;}
+  account.name=name;
+  write("rf_demo_account",account);
+  updateProfile();
+  notify("Profil mis à jour.");
+}
+function openPage(page){
+  currentPage=page;
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  $("page-"+page).classList.remove("hidden");
+  document.querySelectorAll(".nav-item[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  const names={dashboard:"Tableau de bord",reviews:"Mes avis",generator:"Générateur",establishments:"Établissements",settings:"Paramètres",help:"Centre d'aide"};
+  $("breadcrumb").textContent="Espace de travail / "+names[page];
+  if(page==="reviews")renderReviews();
+  if(page==="establishments")renderEstablishments();
+  $("sidebar").classList.remove("open");
+}
+function toggleMenu(){$("sidebar").classList.toggle("open");}
+function average(){
+  return reviews.length?reviews.reduce((s,r)=>s+Number(r.rating),0)/reviews.length:0;
+}
+function renderAll(){
+  renderStats();
+  renderRecent();
+  renderChart();
+  renderReviews();
+  renderBreakdown();
+  renderEstablishments();
+}
+function renderStats(){
+  $("statTotal").textContent=reviews.length;
+  $("statAverage").textContent=reviews.length?average().toFixed(1)+" / 5":"—";
+  $("statPrepared").textContent=prepared;
+  const positive=reviews.length?reviews.filter(r=>r.rating>=4).length/reviews.length*100:0;
+  $("statPositive").textContent=Math.round(positive)+"%";
+}
+function stars(n){return "★".repeat(Number(n))+"☆".repeat(5-Number(n));}
+function safe(value){
+  return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function renderRecent(){
+  const recent=[...reviews].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
+  $("recentReviews").innerHTML=recent.length?recent.map(r=>`
+    <div class="review-row"><div><div class="review-person">${safe(r.client)}</div><div class="review-comment">${safe(r.comment)}</div></div><div style="text-align:right;white-space:nowrap"><div class="stars">${stars(r.rating)}</div><div class="small muted">${safe(r.date)}</div></div></div>
+  `).join(""):'<div class="empty">Aucun avis pour le moment.</div>';
+}
+function renderChart(){
+  const labels=["D-6","D-5","D-4","D-3","D-2","Hier","Auj."];
+  const counts=labels.map((_,i)=>{
+    const d=new Date();d.setDate(d.getDate()-(6-i));
+    const key=d.toISOString().slice(0,10);
+    return reviews.filter(r=>r.date===key).length;
+  });
+  const max=Math.max(1,...counts);
+  $("weeklyChart").innerHTML=counts.map((v,i)=>`
+    <div class="chart-col"><div class="chart-bar" title="${v} avis" style="height:${Math.max(3,v/max*85)}%"></div><span>${labels[i]}</span></div>
+  `).join("");
+}
+function renderBreakdown(){
+  const total=reviews.length||1;
+  $("ratingBreakdown").innerHTML=[5,4,3,2,1].map(n=>{
+    const count=reviews.filter(r=>Number(r.rating)===n).length;
+    return `<div style="display:flex;align-items:center;gap:10px;margin:15px 0"><span class="stars" style="width:55px">${n} ★</span><div style="height:8px;background:#26364d;border-radius:9px;flex:1;overflow:hidden"><div style="height:100%;width:${count/total*100}%;background:#3988ff;border-radius:9px"></div></div><span class="muted small" style="width:20px">${count}</span></div>`;
+  }).join("");
+}
+function renderReviews(){
+  const search=($("searchReviews")?.value||"").toLowerCase();
+  const filter=$("filterReviews")?.value||"all";
+  const sort=$("sortReviews")?.value||"new";
+  let list=reviews.filter(r=>(r.client+" "+r.comment).toLowerCase().includes(search)&&(filter==="all"||String(r.rating)===filter));
+  list.sort((a,b)=>sort==="old"?a.date.localeCompare(b.date):sort==="high"?b.rating-a.rating:sort==="low"?a.rating-b.rating:b.date.localeCompare(a.date));
+  $("reviewList").innerHTML=list.map(r=>`
+    <tr>
+      <td><strong>${safe(r.client)}</strong></td>
+      <td><span class="stars">${stars(r.rating)}</span></td>
+      <td>${safe(r.comment.length>75?r.comment.slice(0,75)+"…":r.comment)}</td>
+      <td>${safe(r.date)}</td>
+      <td><div class="actions"><button class="btn" onclick="editReview(${r.id})">Modifier</button><button class="btn btn-danger" onclick="deleteReview(${r.id})">Supprimer</button></div></td>
+    </tr>`).join("");
+  $("reviewEmpty").classList.toggle("hidden",list.length>0);
+}
+function openAddReview(){
+  editingId=null;
+  $("modalTitle").textContent="Ajouter un avis";
+  $("reviewClient").value="";
+  $("reviewRating").value="5";
+  $("reviewComment").value="";
+  $("reviewDate").value=new Date().toISOString().slice(0,10);
+  $("reviewModal").classList.remove("hidden");
+}
+function editReview(id){
+  const r=reviews.find(x=>x.id===id);if(!r)return;
+  editingId=id;
+  $("modalTitle").textContent="Modifier l'avis";
+  $("reviewClient").value=r.client;
+  $("reviewRating").value=r.rating;
+  $("reviewComment").value=r.comment;
+  $("reviewDate").value=r.date;
+  $("reviewModal").classList.remove("hidden");
+}
+function closeModal(){$("reviewModal").classList.add("hidden");}
+function saveReview(){
+  const client=$("reviewClient").value.trim();
+  const comment=$("reviewComment").value.trim();
+  const rating=Number($("reviewRating").value);
+  const date=$("reviewDate").value;
+  if(!client||!comment||!date){notify("Remplissez tous les champs.",true);return;}
+  if(editingId!==null){
+    reviews=reviews.map(r=>r.id===editingId?{...r,client,comment,rating,date}:r);
+  }else{
+    reviews.push({id:Date.now(),client,comment,rating,date});
+  }
+  write("rf_reviews",reviews);
+  closeModal();
+  renderAll();
+  notify(editingId!==null?"Avis modifié.":"Avis ajouté.");
+  editingId=null;
+}
+function deleteReview(id){
+  if(!confirm("Supprimer définitivement cet avis de la démonstration ?"))return;
+  reviews=reviews.filter(r=>r.id!==id);
+  write("rf_reviews",reviews);
+  renderAll();
+  notify("Avis supprimé.");
+}
+function generateResponse(){
+  const rating=Number($("responseRating").value);
+  const client=$("responseClient").value.trim()||"cher client";
+  const business=$("responseBusiness").value.trim()||"notre établissement";
+  const tone=$("responseTone").value;
+  const comment=$("responseComment").value.trim();
+  let response="";
+  if(rating>=4){
+    if(tone==="friendly")response=`Bonjour ${client} !\n\nUn grand merci pour votre super retour ! Toute l'équipe de ${business} est ravie que votre expérience vous ait plu.\n\nAu plaisir de vous revoir très bientôt !`;
+    else if(tone==="short")response=`Bonjour ${client}, merci beaucoup pour votre avis et votre confiance. Au plaisir de vous accueillir à nouveau chez ${business} !`;
+    else response=`Bonjour ${client},\n\nNous vous remercions sincèrement pour votre commentaire positif. Nous sommes heureux que votre expérience au sein de ${business} ait répondu à vos attentes.\n\nAu plaisir de vous accueillir de nouveau.\n\nL'équipe ${business}`;
+  }else{
+    if(tone==="friendly")response=`Bonjour ${client},\n\nMerci d'avoir pris le temps de nous partager votre ressenti. Nous sommes désolés que votre expérience n'ait pas été entièrement satisfaisante. Votre retour nous aide à nous améliorer.\n\nNous espérons avoir l'occasion de vous proposer une meilleure expérience chez ${business}.\n\nÀ bientôt.`;
+    else if(tone==="short")response=`Bonjour ${client}, nous sommes désolés pour cette expérience. Merci pour votre retour, que nous prenons en compte afin de nous améliorer. L'équipe ${business}.`;
+    else response=`Bonjour ${client},\n\nNous vous remercions d'avoir partagé votre expérience. Nous regrettons que celle-ci n'ait pas pleinement répondu à vos attentes.\n\nVotre commentaire${comment?" (« "+comment+" »)":""} sera pris en considération dans notre démarche d'amélioration.\n\nCordialement,\nL'équipe ${business}`;
+  }
+  $("generatedResponse").textContent=response;
+  prepared++;
+  write("rf_prepared",prepared);
+  renderStats();
+  notify("Réponse préparée.");
+}
+async function copyResponse(){
+  const text=$("generatedResponse").textContent;
+  if(!text||text==="Votre réponse apparaîtra ici après génération."){notify("Générez d'abord une réponse.",true);return;}
+  try{await navigator.clipboard.writeText(text);notify("Réponse copiée !");}
+  catch{notify("La copie automatique n'est pas disponible sur ce navigateur.",true);}
+}
+function clearResponse(){$("generatedResponse").textContent="Votre réponse apparaîtra ici après génération.";}
+function exportCSV(){
+  if(!reviews.length){notify("Aucun avis à exporter.",true);return;}
+  const rows=[["Client","Note","Commentaire","Date"],...reviews.map(r=>[r.client,r.rating,r.comment,r.date])];
+  const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="reviewflow-avis.csv";a.click();
+  URL.revokeObjectURL(url);
+  notify("Export CSV téléchargé.");
+}
+function addEstablishment(){
+  const name=prompt("Nom du nouvel établissement :");
+  if(!name||!name.trim())return;
+  establishments.push(name.trim());
+  write("rf_establishments",establishments);
+  renderEstablishments();
+  notify("Établissement ajouté.");
+}
+function renderEstablishments(){
+  if(!$("establishmentList"))return;
+  $("establishmentList").innerHTML=establishments.map((name,i)=>`
+    <div class="setting-row"><div><strong>🏢 ${safe(name)}</strong><p>Établissement de démonstration #${i+1}</p></div><button class="btn btn-danger" onclick="removeEstablishment(${i})" ${establishments.length===1?"disabled":""}>Supprimer</button></div>
+  `).join("");
+}
+function removeEstablishment(i){
+  if(establishments.length<=1){notify("Gardez au moins un établissement.",true);return;}
+  if(!confirm("Supprimer cet établissement de démonstration ?"))return;
+  establishments.splice(i,1);
+  write("rf_establishments",establishments);
+  renderEstablishments();
+  notify("Établissement supprimé.");
+}
+function resetReviews(){
+  if(!confirm("Effacer tous les avis enregistrés ?"))return;
+  reviews=[];
+  write("rf_reviews",reviews);
+  renderAll();
+  notify("Avis réinitialisés.");
+}
+
+// Démarrage
+goLanding();
+</script>
+</body>
+</html>
